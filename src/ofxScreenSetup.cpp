@@ -1,19 +1,19 @@
 //
-//  ScreenSetup.cpp
+//  ofxScreenSetup.cpp
 //  BaseApp
 //
 //  Created by Oriol Ferrer Mesià on 03/07/14.
 //
 //
 
-#include "ScreenSetup.h"
+#include "ofxScreenSetup.h"
 #include "ofAppGLFWWindow.h"
 
 
-ScreenSetup::ScreenSetup(){
+ofxScreenSetup::ofxScreenSetup(){
 	inited = false;
 }
-void ScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode){
+void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode){
 
 	baseW = baseWidth;
 	baseH = baseHeight;
@@ -21,7 +21,7 @@ void ScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode){
 }
 
 
-vector<string> ScreenSetup::getModeNames(){
+vector<string> ofxScreenSetup::getModeNames(){
 	vector<string> screenModeNames;
 	screenModeNames.push_back("FULL_ALL_MONITORS"); screenModeNames.push_back("FULL_ONE_MONITOR");
 	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_W"); screenModeNames.push_back("BORDERLESS_ONE_MONITOR_H");
@@ -30,16 +30,16 @@ vector<string> ScreenSetup::getModeNames(){
 }
 
 
-void ScreenSetup::cycleToNextScreenMode(){
+void ofxScreenSetup::cycleToNextScreenMode(){
 	ScreenMode tmp = currentMode;
 	tmp = ScreenMode( (tmp + 1)%NUM_SCREEN_MODES );
 	setScreenMode(tmp);
 }
 
 
-void ScreenSetup::setScreenMode(ScreenMode m){
+void ofxScreenSetup::setScreenMode(ScreenMode m){
 
-	ofxScreenSetupArg arg;
+	ScreenSetupArg arg;
 	arg.oldMode = currentMode;
 	arg.newMode = m;
 	arg.oldHeight = ofGetHeight();
@@ -97,8 +97,8 @@ void ScreenSetup::setScreenMode(ScreenMode m){
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 	ofSetWindowPosition(0, 0);
 
-	if(!inited){
-		ofNotifyEvent( setupChanged, arg, this );
-		inited = true;
+	if(inited){
+		ofNotifyEvent( setupChanged, arg, this);
 	}
+	inited = true;
 }

@@ -1,13 +1,13 @@
 //
-//  ScreenSetup.h
+//  ofxScreenSetup.h
 //  BaseApp
 //
 //  Created by Oriol Ferrer Mesià on 03/07/14.
 //
 //
 
-#ifndef __BaseApp__ScreenSetup__
-#define __BaseApp__ScreenSetup__
+#ifndef __BaseApp__ofxScreenSetup__
+#define __BaseApp__ofxScreenSetup__
 
 #include "ofMain.h"
 
@@ -16,25 +16,26 @@
  
  To Use this:
  
- ScreenSetup ss;
+ ofxScreenSetup ss;
  ss.setup(400, 300, WINDOWED); //this defines the Aspect ratio of your project
 
  //implement callback
- void myApp::setupChanged(ofxScreenSetupArg &arg){}
+ void myApp::setupChanged(ofxofxScreenSetupArg &arg){}
 
  //add screen changed listener
  ofAddListener(ss.setupChanged, this, &myApp::setupChanged);
 
  //if you have OFX_REMOTE_UI
- ScreenSetup::ScreenMode & screenMode = ss.getCurrentScreenMode();
- OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM(screenMode, ScreenSetup::FULL_ALL_MONITORS, ScreenSetup::NUM_SCREEN_MODES - 1, ss.getModeNames());
+ ofxScreenSetup::ScreenMode & screenMode = ss.getCurrentScreenMode();
+ OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM(screenMode, ofxScreenSetup::FULL_ALL_MONITORS, ofxScreenSetup::NUM_SCREEN_MODES - 1, ss.getModeNames());
+
+ //if you want to bind to a key
+ ss.cycleToNextScreenMode();
 
  */
 
 
-
-
-class ScreenSetup{
+class ofxScreenSetup{
 
 public:
 
@@ -47,7 +48,7 @@ public:
 		NUM_SCREEN_MODES //NOT to be used
 	};
 
-	struct ofxScreenSetupArg{
+	struct ScreenSetupArg{
 		int newWidth;
 		int newHeight;
 		int oldHeight;
@@ -56,7 +57,7 @@ public:
 		ScreenMode oldMode;
 	};
 
-	ScreenSetup();
+	ofxScreenSetup();
 	void setup(float baseWidth, float baseHeight, ScreenMode mode);
 	void setScreenMode(ScreenMode m);
 
@@ -65,7 +66,7 @@ public:
 
 	ScreenMode & getCurrentScreenMode(){return currentMode;}
 
-	ofEvent<ofxScreenSetupArg>	setupChanged;
+	ofEvent<ScreenSetupArg>	setupChanged;
 
 	ScreenMode currentMode;
 
@@ -77,4 +78,4 @@ private:
 
 };
 
-#endif /* defined(__BaseApp__ScreenSetup__) */
+#endif /* defined(__BaseApp__ofxScreenSetup__) */
