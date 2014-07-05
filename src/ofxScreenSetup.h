@@ -11,6 +11,7 @@
 
 #include "ofMain.h"
 
+#define AUTO_CASE_CREATE(a) case a: return #a
 
 /*
  
@@ -62,6 +63,8 @@ public:
 	void setScreenMode(ScreenMode m);
 
 	vector<string> getModeNames();
+	string stringForMode(ScreenMode);
+
 	void cycleToNextScreenMode();
 
 	ScreenMode & getCurrentScreenMode(){return currentMode;}

@@ -37,6 +37,19 @@ void ofxScreenSetup::cycleToNextScreenMode(){
 }
 
 
+string ofxScreenSetup::stringForMode(ScreenMode m){
+
+	switch (m) {
+		AUTO_CASE_CREATE(FULL_ALL_MONITORS);
+		AUTO_CASE_CREATE(FULL_ONE_MONITOR);
+		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_W);
+		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_H);
+		AUTO_CASE_CREATE(WINDOWED);
+		default: return "ERROR!";
+	}
+}
+
+
 void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 	ScreenSetupArg arg;
@@ -71,7 +84,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 		case BORDERLESS_ONE_MONITOR_W:
 			window->setMultiDisplayFullscreen(true);
 			ofSetFullscreen(true);
-			w = ofGetScreenWidth() * 0.9; //some margin
+			w = ofGetScreenWidth() * 0.75; //allwosome margin
 			arg.newWidth = w;
 			arg.newHeight = w / ar;
 			break;
@@ -79,7 +92,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 		case BORDERLESS_ONE_MONITOR_H:
 			window->setMultiDisplayFullscreen(true);
 			ofSetFullscreen(true);
-			h = ofGetScreenHeight() * 0.9; //some margin
+			h = ofGetScreenHeight() * 0.75; //allow some margin
 			arg.newWidth = (h * ar);
 			arg.newHeight = h;
 			break;
