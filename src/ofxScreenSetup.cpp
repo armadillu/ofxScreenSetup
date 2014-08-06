@@ -107,12 +107,16 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			break;
 	}
 
+	
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 	if(m == WINDOWED){
 		ofSetWindowPosition(40, 40);
 	}else{
+		ofSetFullscreen(false);
 		ofSetWindowPosition(0, verticalOffset);
+		ofSetFullscreen(true);
 	}
+	
 
 	if(inited){
 		ofNotifyEvent( setupChanged, arg, this);
