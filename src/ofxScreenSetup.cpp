@@ -13,8 +13,8 @@
 ofxScreenSetup::ofxScreenSetup(){
 	inited = false;
 }
-void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode){
-
+void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, int verticalOff){
+	verticalOffset = verticalOff;
 	baseW = baseWidth;
 	baseH = baseHeight;
 	setScreenMode(mode);
@@ -108,7 +108,11 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	}
 
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
-	ofSetWindowPosition(0, 0);
+	if(m == WINDOWED){
+		ofSetWindowPosition(40, 40);
+	}else{
+		ofSetWindowPosition(0, verticalOffset);
+	}
 
 	if(inited){
 		ofNotifyEvent( setupChanged, arg, this);

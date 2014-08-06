@@ -59,7 +59,7 @@ public:
 	};
 
 	ofxScreenSetup();
-	void setup(float baseWidth, float baseHeight, ScreenMode mode);
+	void setup(float baseWidth, float baseHeight, ScreenMode mode, int verticalOffset = 0);
 	void setScreenMode(ScreenMode m);
 
 	vector<string> getModeNames();
@@ -75,9 +75,9 @@ public:
 
 private:
 
-
 	bool inited;
 	int baseW, baseH;
+	int verticalOffset;
 
 };
 
