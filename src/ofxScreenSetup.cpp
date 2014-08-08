@@ -99,8 +99,8 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 		case WINDOWED:
 			ofSetFullscreen(false);
-			arg.newWidth = baseW;
-			arg.newHeight = baseH;
+			arg.newWidth = baseW * 0.7;
+			arg.newHeight = baseH * 0.7;
 			break;
 
 		default:
