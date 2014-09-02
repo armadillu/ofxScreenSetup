@@ -50,6 +50,54 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 }
 
 
+ofVec2f ofxScreenSetup::getMainScreenOrigin(){
+
+	ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
+	GLFWwindow * windowPtr = windowP->getGLFWWindow();
+	int numberOfMonitors;
+	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+
+	int xW;	int yW;
+	glfwGetWindowPos(windowPtr, &xW, &yW);
+
+	for (int iC = 0; iC < numberOfMonitors; iC++){
+		int xM; int yM;
+		glfwGetMonitorPos(monitors[iC], &xM, &yM);
+		const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[iC]);
+		ofRectangle monitorRect(xM, yM, desktopMode->width, desktopMode->height);
+		if (monitorRect.inside(xW, yW)){
+			return ofVec2f(xM, yM);
+			break;
+		}
+	}
+	return ofVec2f();
+}
+
+
+ofVec2f ofxScreenSetup::getLeftmostMonitorCoord(){
+
+	ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
+	GLFWwindow * windowPtr = windowP->getGLFWWindow();
+	int numberOfMonitors;
+	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+
+	float xMin = FLT_MAX;
+	float yMin = FLT_MAX;
+	int xW;	int yW;
+	glfwGetWindowPos(windowPtr, &xW, &yW);
+
+	for (int iC = 0; iC < numberOfMonitors; iC++){
+		int xM; int yM;
+		glfwGetMonitorPos(monitors[iC], &xM, &yM);
+		if (xMin > xM) xMin = xM;
+		if (yMin > yM) yMin = yM;
+	}
+	return ofVec2f(xMin, yMin);
+}
+
+
+
+
 void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 	ScreenSetupArg arg;
@@ -84,7 +132,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 		case BORDERLESS_ONE_MONITOR_W:
 			window->setMultiDisplayFullscreen(true);
 			ofSetFullscreen(true);
-			w = ofGetScreenWidth() * 0.75; //allwosome margin
+			w = ofGetScreenWidth();
 			arg.newWidth = w;
 			arg.newHeight = w / ar;
 			break;
@@ -92,31 +140,36 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 		case BORDERLESS_ONE_MONITOR_H:
 			window->setMultiDisplayFullscreen(true);
 			ofSetFullscreen(true);
-			h = ofGetScreenHeight() * 0.75; //allow some margin
+			h = ofGetScreenHeight();
 			arg.newWidth = (h * ar);
 			arg.newHeight = h;
 			break;
 
-		case WINDOWED:
+		case WINDOWED:{
 			ofSetFullscreen(false);
-			arg.newWidth = baseW * 0.7;
-			arg.newHeight = baseH * 0.7;
-			break;
+			float ratioW = ofGetScreenWidth() / float(baseW);
+			float ratioH = ofGetScreenHeight() / float(baseH);
+			float ratio = MIN(ratioH, ratioW);
+			arg.newWidth = baseW * 0.8 * ratio;
+			arg.newHeight = baseH * 0.8  * ratio;
+			}break;
 
 		default:
 			break;
 	}
+	ofVec2f mainScreenOffset = getMainScreenOrigin();
 
-	
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 	if(m == WINDOWED){
-		ofSetWindowPosition(40, 40);
+		ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
 	}else{
-		ofSetFullscreen(false);
-		ofSetWindowPosition(0, verticalOffset);
-		ofSetFullscreen(true);
+		if(m == FULL_ALL_MONITORS){
+			ofVec2f leftmostCoord = getLeftmostMonitorCoord();
+			ofSetWindowPosition(leftmostCoord.x,leftmostCoord.y);
+		}else{
+			ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
+		}
 	}
-	
 
 	if(inited){
 		ofNotifyEvent( setupChanged, arg, this);

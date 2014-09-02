@@ -75,6 +75,9 @@ public:
 
 private:
 
+	ofVec2f getMainScreenOrigin();
+	ofVec2f getLeftmostMonitorCoord();
+
 	bool inited;
 	int baseW, baseH;
 	int verticalOffset;
