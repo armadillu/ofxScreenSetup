@@ -52,22 +52,27 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 
 ofVec2f ofxScreenSetup::getMainScreenOrigin(){
 
-	ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
-	GLFWwindow * windowPtr = windowP->getGLFWWindow();
-	int numberOfMonitors;
-	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+	ofAppBaseWindow * win = ofGetWindowPtr();
 
-	int xW;	int yW;
-	glfwGetWindowPos(windowPtr, &xW, &yW);
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
 
-	for (int iC = 0; iC < numberOfMonitors; iC++){
-		int xM; int yM;
-		glfwGetMonitorPos(monitors[iC], &xM, &yM);
-		const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[iC]);
-		ofRectangle monitorRect(xM, yM, desktopMode->width, desktopMode->height);
-		if (monitorRect.inside(xW, yW)){
-			return ofVec2f(xM, yM);
-			break;
+		ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
+		GLFWwindow * windowPtr = windowP->getGLFWWindow();
+		int numberOfMonitors;
+		GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+
+		int xW;	int yW;
+		glfwGetWindowPos(windowPtr, &xW, &yW);
+
+		for (int iC = 0; iC < numberOfMonitors; iC++){
+			int xM; int yM;
+			glfwGetMonitorPos(monitors[iC], &xM, &yM);
+			const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[iC]);
+			ofRectangle monitorRect(xM, yM, desktopMode->width, desktopMode->height);
+			if (monitorRect.inside(xW, yW)){
+				return ofVec2f(xM, yM);
+				break;
+			}
 		}
 	}
 	return ofVec2f();
@@ -76,23 +81,28 @@ ofVec2f ofxScreenSetup::getMainScreenOrigin(){
 
 ofVec2f ofxScreenSetup::getLeftmostMonitorCoord(){
 
-	ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
-	GLFWwindow * windowPtr = windowP->getGLFWWindow();
-	int numberOfMonitors;
-	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
 
-	float xMin = FLT_MAX;
-	float yMin = FLT_MAX;
-	int xW;	int yW;
-	glfwGetWindowPos(windowPtr, &xW, &yW);
+		ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
+		GLFWwindow * windowPtr = windowP->getGLFWWindow();
+		int numberOfMonitors;
+		GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
 
-	for (int iC = 0; iC < numberOfMonitors; iC++){
-		int xM; int yM;
-		glfwGetMonitorPos(monitors[iC], &xM, &yM);
-		if (xMin > xM) xMin = xM;
-		if (yMin > yM) yMin = yM;
+		float xMin = FLT_MAX;
+		float yMin = FLT_MAX;
+		int xW;	int yW;
+		glfwGetWindowPos(windowPtr, &xW, &yW);
+
+		for (int iC = 0; iC < numberOfMonitors; iC++){
+			int xM; int yM;
+			glfwGetMonitorPos(monitors[iC], &xM, &yM);
+			if (xMin > xM) xMin = xM;
+			if (yMin > yM) yMin = yM;
+		}
+		return ofVec2f(xMin, yMin);
 	}
-	return ofVec2f(xMin, yMin);
+	return ofVec2f();
 }
 
 
@@ -108,6 +118,12 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 	currentMode = m;
 
+	bool isGLUT = true;
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
+		isGLUT = false;
+	}
+
 	ofAppGLFWWindow *window = (ofAppGLFWWindow *)ofGetWindowPtr();
 	float ar = baseW / (float)baseH;
 	float w, h;
@@ -115,7 +131,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	switch (m) {
 		case FULL_ALL_MONITORS:
 			ofSetFullscreen(false);
-			window->setMultiDisplayFullscreen(true);
+			if(!isGLUT) window->setMultiDisplayFullscreen(true);
 			ofSetFullscreen(true);
 			arg.newWidth = ofGetWidth();
 			arg.newHeight = ofGetHeight();
@@ -123,14 +139,14 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 		case FULL_ONE_MONITOR:
 			ofSetFullscreen(false);
-			window->setMultiDisplayFullscreen(false);
+			if(!isGLUT) window->setMultiDisplayFullscreen(false);
 			ofSetFullscreen(true);
 			arg.newWidth = ofGetWidth();
 			arg.newHeight = ofGetHeight();
 			break;
 
 		case BORDERLESS_ONE_MONITOR_W:
-			window->setMultiDisplayFullscreen(false);
+			if(!isGLUT) window->setMultiDisplayFullscreen(false);
 			w = ofGetScreenWidth();
 			arg.newWidth = w;
 			arg.newHeight = w / ar;
@@ -138,7 +154,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			break;
 
 		case BORDERLESS_ONE_MONITOR_H:
-			window->setMultiDisplayFullscreen(false);
+			if(!isGLUT) window->setMultiDisplayFullscreen(false);
 			ofSetFullscreen(true);
 			h = ofGetScreenHeight();
 			arg.newWidth = (h * ar);
