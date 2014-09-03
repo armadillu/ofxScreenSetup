@@ -130,15 +130,15 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			break;
 
 		case BORDERLESS_ONE_MONITOR_W:
-			window->setMultiDisplayFullscreen(true);
-			ofSetFullscreen(true);
+			window->setMultiDisplayFullscreen(false);
 			w = ofGetScreenWidth();
 			arg.newWidth = w;
 			arg.newHeight = w / ar;
+			ofSetFullscreen(true);
 			break;
 
 		case BORDERLESS_ONE_MONITOR_H:
-			window->setMultiDisplayFullscreen(true);
+			window->setMultiDisplayFullscreen(false);
 			ofSetFullscreen(true);
 			h = ofGetScreenHeight();
 			arg.newWidth = (h * ar);
@@ -157,9 +157,29 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 		default:
 			break;
 	}
-	ofVec2f mainScreenOffset = getMainScreenOrigin();
 
+#ifdef TARGET_WIN32
+	ofVec2f mainScreenOffset = getMainScreenOrigin();
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
+
+	if(m == WINDOWED){
+		ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
+	}else{
+		if (m == BORDERLESS_ONE_MONITOR_H || m == BORDERLESS_ONE_MONITOR_W){
+			ofSetWindowPosition(0, verticalOffset);
+		}else{
+			ofSetFullscreen(false);
+			ofSetWindowPosition(0, verticalOffset);
+			ofSetFullscreen(true);
+		}
+	}
+#endif // TARGET_WIN32
+
+#ifdef TARGET_OSX
+
+	ofVec2f mainScreenOffset = getMainScreenOrigin();
+	ofSetWindowShape(arg.newWidth, arg.newHeight);
+
 	if(m == WINDOWED){
 		ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
 	}else{
@@ -170,7 +190,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
 		}
 	}
-
+#endif
 	if(inited){
 		ofNotifyEvent( setupChanged, arg, this);
 	}
