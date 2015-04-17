@@ -45,6 +45,8 @@ public:
 		FULL_ONE_MONITOR,
 		BORDERLESS_ONE_MONITOR_W,
 		BORDERLESS_ONE_MONITOR_H,
+		BORDERLESS_ONE_MONITOR_HALF_H,
+		BORDERLESS_ALL_MONITORS_FIT_TO_W,
 		WINDOWED,
 		NUM_SCREEN_MODES //NOT to be used
 	};
@@ -75,8 +77,10 @@ public:
 
 private:
 
-	ofVec2f getMainScreenOrigin();
-	ofVec2f getLeftmostMonitorCoord();
+	ofVec2f getMainScreenOrigin(); //only in GLFWwindow
+	ofVec2f getLeftmostMonitorCoord(); //only in GLFWwindow
+	ofVec2f getVirtualTopLeftMonitorCoord();
+	ofRectangle getAllMonitorSpace(); //only in GLFWwindow
 
 	bool inited;
 	int baseW, baseH;

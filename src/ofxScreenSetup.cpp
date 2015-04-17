@@ -25,6 +25,7 @@ vector<string> ofxScreenSetup::getModeNames(){
 	vector<string> screenModeNames;
 	screenModeNames.push_back("FULL_ALL_MONITORS"); screenModeNames.push_back("FULL_ONE_MONITOR");
 	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_W"); screenModeNames.push_back("BORDERLESS_ONE_MONITOR_H");
+	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_HALF_H"); screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FIT_TO_W");
 	screenModeNames.push_back("WINDOWED");
 	return screenModeNames;
 }
@@ -44,6 +45,8 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 		AUTO_CASE_CREATE(FULL_ONE_MONITOR);
 		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_W);
 		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_H);
+		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_HALF_H);
+		AUTO_CASE_CREATE(BORDERLESS_ALL_MONITORS_FIT_TO_W);
 		AUTO_CASE_CREATE(WINDOWED);
 		default: return "ERROR!";
 	}
@@ -78,8 +81,7 @@ ofVec2f ofxScreenSetup::getMainScreenOrigin(){
 	return ofVec2f();
 }
 
-
-ofVec2f ofxScreenSetup::getLeftmostMonitorCoord(){
+ofVec2f ofxScreenSetup::getVirtualTopLeftMonitorCoord(){
 
 	ofAppBaseWindow * win = ofGetWindowPtr();
 	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
@@ -106,6 +108,51 @@ ofVec2f ofxScreenSetup::getLeftmostMonitorCoord(){
 }
 
 
+ofVec2f ofxScreenSetup::getLeftmostMonitorCoord(){
+
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
+
+		ofAppGLFWWindow *windowP = (ofAppGLFWWindow *)ofGetWindowPtr();
+		GLFWwindow * windowPtr = windowP->getGLFWWindow();
+		int numberOfMonitors;
+		GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
+
+		float xMin = FLT_MAX;
+		float yMin = FLT_MAX;
+		int xW;	int yW;
+		glfwGetWindowPos(windowPtr, &xW, &yW);
+
+		for (int iC = 0; iC < numberOfMonitors; iC++){
+			int xM; int yM;
+			glfwGetMonitorPos(monitors[iC], &xM, &yM);
+			if (xMin > xM){
+				xMin = xM; yMin = yM;
+			}
+		}
+		return ofVec2f(xMin, yMin);
+	}
+	return ofVec2f();
+}
+
+ofRectangle ofxScreenSetup::getAllMonitorSpace(){
+
+	ofRectangle allScreensSpace;
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
+
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		for(int i = 0; i< count; i++){
+			const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[i]);
+			int x, y;
+			glfwGetMonitorPos(monitors[i], &x, &y);
+			ofRectangle screen = ofRectangle( x, y, desktopMode->width, desktopMode->height );
+			allScreensSpace = allScreensSpace.getUnion(screen);
+		}
+	}
+	return allScreensSpace;
+}
 
 
 void ofxScreenSetup::setScreenMode(ScreenMode m){
@@ -161,6 +208,26 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			arg.newHeight = h;
 			break;
 
+		case BORDERLESS_ONE_MONITOR_HALF_H:
+			if(!isGLUT) window->setMultiDisplayFullscreen(false);
+			ofSetFullscreen(true);
+			h = ofGetScreenHeight() * 0.5;
+			arg.newWidth = (h * ar);
+			arg.newHeight = h;
+			break;
+
+		case BORDERLESS_ALL_MONITORS_FIT_TO_W:{
+
+			if(!isGLUT){ //this mode does nothing in GLUT windows
+				window->setMultiDisplayFullscreen(false);
+				ofRectangle allScreensSpace = getAllMonitorSpace();
+				ofSetFullscreen(true);
+				w = allScreensSpace.width;
+				arg.newWidth = w;
+				arg.newHeight = w / ar;
+			}
+			}break;
+
 		case WINDOWED:{
 			ofSetFullscreen(false);
 			float ratioW = ofGetScreenWidth() / float(baseW);
@@ -196,15 +263,28 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	ofVec2f mainScreenOffset = getMainScreenOrigin();
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 
-	if(m == WINDOWED){
-		ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
-	}else{
-		if(m == FULL_ALL_MONITORS){
+	switch(m){
+
+		case FULL_ALL_MONITORS:{
+			ofVec2f topLeftSpaceCoord = getVirtualTopLeftMonitorCoord();
+			ofSetWindowPosition(topLeftSpaceCoord.x,topLeftSpaceCoord.y);
+			}break;
+
+		case BORDERLESS_ONE_MONITOR_H:
+		case BORDERLESS_ALL_MONITORS_FIT_TO_W:{
 			ofVec2f leftmostCoord = getLeftmostMonitorCoord();
 			ofSetWindowPosition(leftmostCoord.x,leftmostCoord.y);
-		}else{
-			ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
-		}
+			}break;
+
+		case WINDOWED:
+			ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
+			break;
+
+		case BORDERLESS_ONE_MONITOR_W:
+		case FULL_ONE_MONITOR:
+		case BORDERLESS_ONE_MONITOR_HALF_H:
+		default: ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
+			break;
 	}
 #endif
 	if(inited){
