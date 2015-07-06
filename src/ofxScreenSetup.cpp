@@ -230,11 +230,8 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 		case WINDOWED:{
 			ofSetFullscreen(false);
-			float ratioW = ofGetScreenWidth() / float(baseW);
-			float ratioH = ofGetScreenHeight() / float(baseH);
-			float ratio = MIN(ratioH, ratioW);
-			arg.newWidth = baseW * 0.8 * ratio;
-			arg.newHeight = baseH * 0.8  * ratio;
+			arg.newWidth = baseW ;
+			arg.newHeight = baseH;
 			}break;
 
 		default:
