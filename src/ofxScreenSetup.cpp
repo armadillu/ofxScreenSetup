@@ -26,6 +26,7 @@ vector<string> ofxScreenSetup::getModeNames(){
 	screenModeNames.push_back("FULL_ALL_MONITORS"); screenModeNames.push_back("FULL_ONE_MONITOR");
 	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_W"); screenModeNames.push_back("BORDERLESS_ONE_MONITOR_H");
 	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_HALF_H"); screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FIT_TO_W");
+	screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT");
 	screenModeNames.push_back("WINDOWED");
 	return screenModeNames;
 }
@@ -47,6 +48,7 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_H);
 		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_HALF_H);
 		AUTO_CASE_CREATE(BORDERLESS_ALL_MONITORS_FIT_TO_W);
+		AUTO_CASE_CREATE(BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT);
 		AUTO_CASE_CREATE(WINDOWED);
 		default: return "ERROR!";
 	}
@@ -154,6 +156,48 @@ ofRectangle ofxScreenSetup::getAllMonitorSpace(){
 	return allScreensSpace;
 }
 
+ofRectangle ofxScreenSetup::getAllMonitorCommonHeightSpace(){
+
+	ofRectangle allScreensSpace;
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
+
+		vector<float> tops;
+		vector<float> bottoms;
+
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		for(int i = 0; i< count; i++){
+			const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[i]);
+			int x, y;
+			glfwGetMonitorPos(monitors[i], &x, &y);
+			ofRectangle screen = ofRectangle( x, y, desktopMode->width, desktopMode->height );
+			tops.push_back(y + desktopMode->height);
+			bottoms.push_back(y);
+			allScreensSpace = allScreensSpace.getUnion(screen);
+		}
+
+		int maxYIndex = -1;
+		float maxY = FLT_MIN;
+		int minHeightIndex = -1;
+		float minHeight = FLT_MAX;
+		for(int i = 0; i < bottoms.size(); i++){
+			if (bottoms[i] > maxY){
+				maxYIndex = i;
+				maxY = bottoms[i];
+			}
+			if (tops[i] < minHeight){
+				minHeight = i;
+				minHeight = tops[i];
+			}
+		}
+		cout << "done" << endl;
+		allScreensSpace.y = maxY;
+		allScreensSpace.height = minHeight;
+	}
+	return allScreensSpace;
+}
+
 
 void ofxScreenSetup::setScreenMode(ScreenMode m){
 
@@ -228,6 +272,16 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			}
 			}break;
 
+		case BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT:{
+			if(!isGLUT){ //this mode does nothing in GLUT windows
+				window->setMultiDisplayFullscreen(false);
+				ofRectangle allScreensSpace = getAllMonitorCommonHeightSpace();
+				ofSetFullscreen(true);
+				arg.newWidth = allScreensSpace.width;
+				arg.newHeight = allScreensSpace.height;
+			}
+		}break;
+
 		case WINDOWED:{
 			ofSetFullscreen(false);
 			arg.newWidth = baseW ;
@@ -269,6 +323,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 		case BORDERLESS_ONE_MONITOR_H:
 		case BORDERLESS_ALL_MONITORS_FIT_TO_W:{
+		case BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT:
 			ofVec2f leftmostCoord = getLeftmostMonitorCoord();
 			ofSetWindowPosition(leftmostCoord.x,leftmostCoord.y);
 			}break;
