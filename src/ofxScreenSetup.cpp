@@ -23,10 +23,14 @@ void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, i
 
 vector<string> ofxScreenSetup::getModeNames(){
 	vector<string> screenModeNames;
-	screenModeNames.push_back("FULL_ALL_MONITORS"); screenModeNames.push_back("FULL_ONE_MONITOR");
-	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_W"); screenModeNames.push_back("BORDERLESS_ONE_MONITOR_H");
-	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_HALF_H"); screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FIT_TO_W");
+	screenModeNames.push_back("FULL_ALL_MONITORS");
+	screenModeNames.push_back("FULL_ONE_MONITOR");
+	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_W");
+	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_H");
+	screenModeNames.push_back("BORDERLESS_ONE_MONITOR_HALF_H");
+	screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FIT_TO_W");
 	screenModeNames.push_back("BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT");
+	screenModeNames.push_back("BORDERLESS_NATIVE_SIZE");
 	screenModeNames.push_back("WINDOWED");
 	return screenModeNames;
 }
@@ -49,6 +53,7 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 		AUTO_CASE_CREATE(BORDERLESS_ONE_MONITOR_HALF_H);
 		AUTO_CASE_CREATE(BORDERLESS_ALL_MONITORS_FIT_TO_W);
 		AUTO_CASE_CREATE(BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT);
+		AUTO_CASE_CREATE(BORDERLESS_NATIVE_SIZE);
 		AUTO_CASE_CREATE(WINDOWED);
 		default: return "ERROR!";
 	}
@@ -281,6 +286,13 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 				arg.newHeight = allScreensSpace.height;
 			}
 		}break;
+			
+		case BORDERLESS_NATIVE_SIZE:
+			if(!isGLUT) window->setMultiDisplayFullscreen(true);
+			ofSetFullscreen(true);
+			arg.newWidth = baseW;
+			arg.newHeight = baseH;
+			break;
 
 		case WINDOWED:{
 			ofSetFullscreen(false);
@@ -311,7 +323,6 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 #ifdef TARGET_OSX
 
-	ofVec2f mainScreenOffset = getMainScreenOrigin();
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 
 	switch(m){
@@ -321,6 +332,10 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			ofSetWindowPosition(topLeftSpaceCoord.x,topLeftSpaceCoord.y);
 			}break;
 
+		case BORDERLESS_NATIVE_SIZE:{
+			ofSetWindowPosition(0,0);
+			}break;
+
 		case BORDERLESS_ONE_MONITOR_H:
 		case BORDERLESS_ALL_MONITORS_FIT_TO_W:{
 		case BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT:
@@ -328,15 +343,18 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			ofSetWindowPosition(leftmostCoord.x,leftmostCoord.y);
 			}break;
 
-		case WINDOWED:
+		case WINDOWED:{
+			ofVec2f mainScreenOffset = getMainScreenOrigin();
 			ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
-			break;
+		}break;
 
 		case BORDERLESS_ONE_MONITOR_W:
 		case FULL_ONE_MONITOR:
 		case BORDERLESS_ONE_MONITOR_HALF_H:
-		default: ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
-			break;
+		default: {
+			ofVec2f mainScreenOffset = getMainScreenOrigin();
+			ofSetWindowPosition(mainScreenOffset.x , mainScreenOffset.y);
+		}break;
 	}
 #endif
 	if(inited){
