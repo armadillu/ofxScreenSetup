@@ -50,6 +50,9 @@ public:
 		BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT,
 		BORDERLESS_NATIVE_SIZE,
 		WINDOWED,
+		MONITOR_2,
+		MONITOR_3,
+		MONITOR_4,
 		NUM_SCREEN_MODES //NOT to be used
 	};
 
@@ -84,6 +87,8 @@ private:
 	ofVec2f getVirtualTopLeftMonitorCoord();
 	ofRectangle getAllMonitorSpace(); //only in GLFWwindow
 	ofRectangle getAllMonitorCommonHeightSpace(); //only in GLFWwindow
+	int getNumMonitors();
+	ofRectangle getRectForMonitor(int monitorID); //only in GLFWwindow
 
 	bool inited;
 	int baseW, baseH;
