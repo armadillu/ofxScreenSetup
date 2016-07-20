@@ -65,20 +65,56 @@ public:
 		ScreenMode oldMode;
 	};
 
+	//this only applies to windows, glwf doesnt quite get the window size right
+	struct WindowEdgePaddingConfig {
+		int xPadding;
+		int yOffset;
+		WindowEdgePaddingConfig() {
+			xPadding = yOffset = 0;
+		}
+
+		WindowEdgePaddingConfig(int xp, int ypad) {
+			xPadding = xp;
+			yOffset = ypad;
+		}
+	};
+
 	ofxScreenSetup();
-	void setup(float baseWidth, float baseHeight, ScreenMode mode, int verticalOffset = 0);
+
+	//padding only applies to Windows; GLWF fullscreen somehow gets confused about the Win32 windows edges
+	//so we need to compensate with some offsets. Your "Windows theme" also seems to affect this;
+	//try passing windows7Pad or windows10Pad
+	void setup(	float baseWidth, 
+				float baseHeight, 
+				ScreenMode mode,
+				#ifdef TARGET_WIN32
+				WindowEdgePaddingConfig padding = windows10Pad,
+				#else
+				WindowEdgePaddingConfig padding = WindowEdgePaddingConfig(), //osx && linux get no padding offsets
+				#endif
+				#ifdef _DEBUG
+				bool allowFullscreenDebug = true //if true, you can still atl+tab to VS on windows when a breakpoints hits
+				#else							 //but the windows menubar is sometimes on top of the window (so true is only good for debug)														
+				bool allowFullscreenDebug = false
+				#endif
+	);
+
 	void setScreenMode(ScreenMode m);
 
 	vector<string> getModeNames();
 	string stringForMode(ScreenMode);
 
 	void cycleToNextScreenMode();
+	void drawDebug(); //draws a clear pattern showing all the screen pixels
 
 	ScreenMode & getCurrentScreenMode(){return currentMode;}
 
 	ofEvent<ScreenSetupArg>	setupChanged;
 
 	ScreenMode currentMode;
+
+	static WindowEdgePaddingConfig windows7Pad;
+	static WindowEdgePaddingConfig windows10Pad;
 
 private:
 
@@ -92,9 +128,12 @@ private:
 
 	bool inited;
 	int baseW, baseH;
-	int verticalOffset;
+	int currentW, currentH;
 
 	void setFullscreenWindowStyle();
+
+	WindowEdgePaddingConfig paddingConfig;
+	bool fullscreenDebugMode; //dictates if borderless fs windows are on top of everything or not
 
 };
 

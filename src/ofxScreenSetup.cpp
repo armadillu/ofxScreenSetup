@@ -9,17 +9,20 @@
 #include "ofxScreenSetup.h"
 #include "ofAppGLFWWindow.h"
 
+ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7Pad = WindowEdgePaddingConfig(4, 23);
+ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows10Pad = WindowEdgePaddingConfig(8, 30);
 
 ofxScreenSetup::ofxScreenSetup(){
 	inited = false;
 }
-void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, int verticalOff){
-	verticalOffset = verticalOff;
+
+void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, WindowEdgePaddingConfig padding, bool allowFullscreenDebug){
 	baseW = baseWidth;
 	baseH = baseHeight;
 	setScreenMode(mode);
+	paddingConfig = padding;
+	fullscreenDebugMode = allowFullscreenDebug;
 }
-
 
 vector<string> ofxScreenSetup::getModeNames(){
 	vector<string> screenModeNames;
@@ -63,6 +66,50 @@ string ofxScreenSetup::stringForMode(ScreenMode m){
 		AUTO_CASE_CREATE(MONITOR_4);
 		default: return "ERROR!";
 	}
+}
+
+void ofxScreenSetup::drawDebug() {
+
+	ofPushStyle();
+	ofClear(0, 0, 0, 255);
+	ofSetLineWidth(5);
+	ofSetColor(255);
+	ofDrawLine(0, 0, ofGetWidth(), ofGetHeight());
+	ofDrawLine(ofGetWidth(), 0, 0, ofGetHeight());
+	ofDrawLine(ofGetWidth()/2, 0, ofGetWidth()/2, ofGetHeight());
+	ofDrawLine(0, ofGetHeight()/2, ofGetWidth(), ofGetHeight()/2);
+	ofNoFill();
+	ofSetCircleResolution(128);
+	ofDrawCircle(ofGetWidth() / 2, ofGetHeight() / 2, MIN(ofGetWidth(), ofGetHeight()) / 2);
+	ofDrawCircle(ofGetWidth() / 2, ofGetHeight() / 2, MAX(ofGetWidth(), ofGetHeight()) / 2);
+	ofSetLineWidth(1);
+	ofDrawRectangle(ofGetNativeViewport());
+	ofFill();
+	ofSetColor(255, 0, 0);
+	float s = 100;
+	ofDrawRectangle(0, 0, s, s);
+	ofDrawRectangle(ofGetWidth() - s, 0, s, s);
+	ofDrawRectangle(0, ofGetHeight() - s, s, s);
+	ofDrawRectangle(ofGetWidth() - s, ofGetHeight() - s, s, s);
+	ofSetColor(255);
+	ofNoFill();
+	ofDrawRectangle(0, 0, s, s);
+	ofDrawRectangle(ofGetWidth() - s, 0, s, s);
+	ofDrawRectangle(0, ofGetHeight() - s, s, s);
+	ofDrawRectangle(ofGetWidth() - s, ofGetHeight() - s, s, s);
+	ofFill();
+	string msg = stringForMode(currentMode) + " : " + ofToString(currentW) + " x " + ofToString(currentH);
+	float scaleUp = 4;
+	int xoff = scaleUp * (msg.size() / 2 * 8); //centering it on screen
+	int yoff = 12 * 0.5;
+	ofPushMatrix();
+	ofTranslate(ofGetWidth() / 2 - xoff, ofGetHeight() / 2 + yoff);
+	ofScale(scaleUp, scaleUp);
+	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL);
+	ofDrawBitmapStringHighlight(msg, 0, 0, ofColor::limeGreen, ofColor::black);
+	ofPopMatrix();
+	ofPopStyle();
+
 }
 
 
@@ -186,15 +233,6 @@ ofRectangle ofxScreenSetup::getRectForMonitor(int monitorID){
 		screen = ofRectangle(x, y, desktopMode->width, desktopMode->height);
 	}
 	return screen;
-}
-
-void ofxScreenSetup::setFullscreenWindowStyle(){
-	#ifdef TARGET_WIN32 //this allows for the debugger to be reachable from a fullscreen breakpoint/crash
-	HWND hwnd = ((ofAppGLFWWindow *)ofGetWindowPtr())->getWin32Window();
-	SetWindowLong(hwnd, GWL_EXSTYLE, 0);
-	SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-	#endif;
 }
 
 
@@ -350,39 +388,43 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 #ifdef TARGET_WIN32
 	ofVec2f mainScreenOffset = getMainScreenOrigin();
-	float xpad = 4; //those are magic numbers that I empirically figured out on windows 7 - TODO test win10 & 8
-	float yoff = 23;
-	float bottomYoff = 27;
+	//those are magic numbers that I empirically figured out on windows 7 classic theme
+	//in windoes 7 basic theme numbers are off!
+
+	int xpad = paddingConfig.xPadding;
+	int yoff = paddingConfig.yOffset;
+	int bottomYoff = xpad + yoff;
 
 	if (!isGLUT) {
 		switch (m) {
 			case FULL_ALL_MONITORS: {
+				if (!isGLUT) setFullscreenWindowStyle();
 				ofVec2f topLeftSpaceCoord = getVirtualTopLeftMonitorCoord();
 				glfwSetWindowPos(glfww, topLeftSpaceCoord.x + xpad, topLeftSpaceCoord.y + yoff);
-				if (!isGLUT) setFullscreenWindowStyle();
 				}break;
 
 			case BORDERLESS_NATIVE_SIZE: 
 			case BORDERLESS_ONE_MONITOR_H:
 			case BORDERLESS_ONE_MONITOR_W:
 			case BORDERLESS_ONE_MONITOR_HALF_H:
+				if (!isGLUT) setFullscreenWindowStyle();
 				glfwSetWindowPos(glfww, 0 + xpad, 0 + yoff);
 				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
-				if (!isGLUT) setFullscreenWindowStyle();
 				break;
 
 			case BORDERLESS_ALL_MONITORS_FIT_TO_W: {
+				if (!isGLUT) setFullscreenWindowStyle();
 				ofRectangle allScreensSpace = getAllMonitorSpace();
 				glfwSetWindowPos(glfww, allScreensSpace.x + xpad, allScreensSpace.y + yoff);
 				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
-				if (!isGLUT) setFullscreenWindowStyle();
 				}break;
 
 			case BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT: {
+				if (!isGLUT) setFullscreenWindowStyle();
 				ofRectangle commonHspace = getAllMonitorCommonHeightSpace();
 				glfwSetWindowPos(glfww, commonHspace.x + xpad, commonHspace.y + yoff);
 				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
-				if (!isGLUT) setFullscreenWindowStyle();
+				
 				}break;
 
 			case WINDOWED: {
@@ -392,9 +434,9 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			case MONITOR_2:
 			case MONITOR_3:
 			case MONITOR_4: {
+				if (!isGLUT) setFullscreenWindowStyle();
 				glfwSetWindowPos(glfww, monitorOnly.x + xpad, monitorOnly.y + yoff);
 				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
-				if (!isGLUT) setFullscreenWindowStyle();
 				}break;
 		}
 	}
@@ -446,5 +488,17 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	if(inited){
 		ofNotifyEvent( setupChanged, arg, this);
 	}
+	currentW = arg.newWidth;
+	currentH = arg.newHeight;
 	inited = true;
+}
+
+
+void ofxScreenSetup::setFullscreenWindowStyle() {
+	#ifdef TARGET_WIN32 //this allows for the debugger to be reachable from a fullscreen breakpoint/crash
+	HWND hwnd = ((ofAppGLFWWindow *)ofGetWindowPtr())->getWin32Window();
+	SetWindowLong(hwnd, GWL_EXSTYLE, 0);
+	SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	SetWindowPos(hwnd, fullscreenDebugMode ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+	#endif;
 }
