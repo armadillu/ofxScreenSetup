@@ -188,6 +188,15 @@ ofRectangle ofxScreenSetup::getRectForMonitor(int monitorID){
 	return screen;
 }
 
+void ofxScreenSetup::setFullscreenWindowStyle(){
+	#ifdef TARGET_WIN32 //this allows for the debugger to be reachable from a fullscreen breakpoint/crash
+	HWND hwnd = ((ofAppGLFWWindow *)ofGetWindowPtr())->getWin32Window();
+	SetWindowLong(hwnd, GWL_EXSTYLE, 0);
+	SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+	#endif;
+}
+
 
 ofRectangle ofxScreenSetup::getAllMonitorCommonHeightSpace(){
 
@@ -195,9 +204,7 @@ ofRectangle ofxScreenSetup::getAllMonitorCommonHeightSpace(){
 	ofAppBaseWindow * win = ofGetWindowPtr();
 	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
 
-		vector<float> tops;
-		vector<float> bottoms;
-
+		ofRectangle commonH;
 		int count;
 		GLFWmonitor** monitors = glfwGetMonitors(&count);
 		for(int i = 0; i< count; i++){
@@ -205,28 +212,16 @@ ofRectangle ofxScreenSetup::getAllMonitorCommonHeightSpace(){
 			int x, y;
 			glfwGetMonitorPos(monitors[i], &x, &y);
 			ofRectangle screen = ofRectangle( x, y, desktopMode->width, desktopMode->height );
-			tops.push_back(y + desktopMode->height);
-			bottoms.push_back(y);
+			ofRectangle temp = ofRectangle(0,screen.y, 100, screen.height);
+			if (i == 0) {
+				commonH = temp;
+			}else {
+				commonH = commonH.getIntersection(temp);
+			}
 			allScreensSpace = allScreensSpace.getUnion(screen);
 		}
-
-		int maxYIndex = -1;
-		float maxY = FLT_MIN;
-		int minHeightIndex = -1;
-		float minHeight = FLT_MAX;
-		for(int i = 0; i < bottoms.size(); i++){
-			if (bottoms[i] > maxY){
-				maxYIndex = i;
-				maxY = bottoms[i];
-			}
-			if (tops[i] < minHeight){
-				minHeight = i;
-				minHeight = tops[i];
-			}
-		}
-		cout << "done" << endl;
-		allScreensSpace.y = maxY;
-		allScreensSpace.height = minHeight;
+		allScreensSpace.y = commonH.y;
+		allScreensSpace.height = commonH.height;
 	}
 	return allScreensSpace;
 }
@@ -246,11 +241,15 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	bool cancel = false;
 	bool isGLUT = true;
 	ofAppBaseWindow * win = ofGetWindowPtr();
+	GLFWwindow* glfww = NULL;
 	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
 		isGLUT = false;
 	}
 
 	ofAppGLFWWindow *window = (ofAppGLFWWindow *)ofGetWindowPtr();
+	if (!isGLUT) {
+		glfww = window->getGLFWWindow();
+	}
 	float ar = baseW / (float)baseH;
 	float w, h;
 
@@ -351,19 +350,55 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 #ifdef TARGET_WIN32
 	ofVec2f mainScreenOffset = getMainScreenOrigin();
-	ofSetWindowShape(arg.newWidth, arg.newHeight);
+	float xpad = 4; //those are magic numbers that I empirically figured out on windows 7 - TODO test win10 & 8
+	float yoff = 23;
+	float bottomYoff = 27;
 
-	if(m == WINDOWED){
-		ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
-	}else{
-		if (m == BORDERLESS_ONE_MONITOR_H || m == BORDERLESS_ONE_MONITOR_W){
-			ofSetWindowPosition(0, verticalOffset);
-		}else{
-			ofSetFullscreen(false);
-			ofSetWindowPosition(0, verticalOffset);
-			ofSetFullscreen(true);
+	if (!isGLUT) {
+		switch (m) {
+			case FULL_ALL_MONITORS: {
+				ofVec2f topLeftSpaceCoord = getVirtualTopLeftMonitorCoord();
+				glfwSetWindowPos(glfww, topLeftSpaceCoord.x + xpad, topLeftSpaceCoord.y + yoff);
+				if (!isGLUT) setFullscreenWindowStyle();
+				}break;
+
+			case BORDERLESS_NATIVE_SIZE: 
+			case BORDERLESS_ONE_MONITOR_H:
+			case BORDERLESS_ONE_MONITOR_W:
+			case BORDERLESS_ONE_MONITOR_HALF_H:
+				glfwSetWindowPos(glfww, 0 + xpad, 0 + yoff);
+				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
+				if (!isGLUT) setFullscreenWindowStyle();
+				break;
+
+			case BORDERLESS_ALL_MONITORS_FIT_TO_W: {
+				ofRectangle allScreensSpace = getAllMonitorSpace();
+				glfwSetWindowPos(glfww, allScreensSpace.x + xpad, allScreensSpace.y + yoff);
+				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
+				if (!isGLUT) setFullscreenWindowStyle();
+				}break;
+
+			case BORDERLESS_ALL_MONITORS_FILL_COMMON_HEIGHT: {
+				ofRectangle commonHspace = getAllMonitorCommonHeightSpace();
+				glfwSetWindowPos(glfww, commonHspace.x + xpad, commonHspace.y + yoff);
+				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
+				if (!isGLUT) setFullscreenWindowStyle();
+				}break;
+
+			case WINDOWED: {
+				ofSetWindowPosition(mainScreenOffset.x + 40, mainScreenOffset.y + 40);
+				}break;
+
+			case MONITOR_2:
+			case MONITOR_3:
+			case MONITOR_4: {
+				glfwSetWindowPos(glfww, monitorOnly.x + xpad, monitorOnly.y + yoff);
+				glfwSetWindowSize(glfww, arg.newWidth - 2 * xpad, arg.newHeight - bottomYoff);
+				if (!isGLUT) setFullscreenWindowStyle();
+				}break;
 		}
 	}
+
 #endif // TARGET_WIN32
 
 #ifdef TARGET_OSX

@@ -94,6 +94,8 @@ private:
 	int baseW, baseH;
 	int verticalOffset;
 
+	void setFullscreenWindowStyle();
+
 };
 
 #endif /* defined(__BaseApp__ofxScreenSetup__) */
