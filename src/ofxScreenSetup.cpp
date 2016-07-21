@@ -9,8 +9,9 @@
 #include "ofxScreenSetup.h"
 #include "ofAppGLFWWindow.h"
 
-ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7Pad = WindowEdgePaddingConfig(4, 23);
-ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows10Pad = WindowEdgePaddingConfig(8, 30);
+ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7ClassicThemePad = WindowEdgePaddingConfig(4, 23);
+ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7NormalThemePad = WindowEdgePaddingConfig(8, 30);
+ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows10Pad = WindowEdgePaddingConfig(8, 31);
 
 ofxScreenSetup::ofxScreenSetup(){
 	inited = false;

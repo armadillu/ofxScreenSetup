@@ -113,7 +113,8 @@ public:
 
 	ScreenMode currentMode;
 
-	static WindowEdgePaddingConfig windows7Pad;
+	static WindowEdgePaddingConfig windows7ClassicThemePad;
+	static WindowEdgePaddingConfig windows7NormalThemePad;
 	static WindowEdgePaddingConfig windows10Pad;
 
 private:
