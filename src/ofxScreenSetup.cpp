@@ -20,9 +20,9 @@ ofxScreenSetup::ofxScreenSetup(){
 void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, WindowEdgePaddingConfig padding, bool allowFullscreenDebug){
 	baseW = baseWidth;
 	baseH = baseHeight;
-	setScreenMode(mode);
 	paddingConfig = padding;
 	fullscreenDebugMode = allowFullscreenDebug;
+	setScreenMode(mode);
 }
 
 vector<string> ofxScreenSetup::getModeNames(){
