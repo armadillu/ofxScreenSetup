@@ -142,6 +142,33 @@ ofVec2f ofxScreenSetup::getMainScreenOrigin(){
 	return ofVec2f();
 }
 
+vector<ofRectangle> ofxScreenSetup::getAllMonitors(){
+
+	vector<ofRectangle> retMonitors;
+	ofAppBaseWindow * win = ofGetWindowPtr();
+	ofRectangle totalRect;
+	if(dynamic_cast<ofAppGLFWWindow*>(win) != NULL){
+
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		for(int i = 0; i< count; i++){
+			const GLFWvidmode * desktopMode = glfwGetVideoMode(monitors[i]);
+			int x, y;
+			glfwGetMonitorPos(monitors[i], &x, &y);
+			ofRectangle monitorRect = ofRectangle( x, y, desktopMode->width, desktopMode->height );
+			retMonitors.push_back(monitorRect);
+			totalRect = totalRect.getUnion(monitorRect);
+		}
+	}
+
+	for(int i = 0; i < retMonitors.size(); i++){
+		retMonitors[i].x -= totalRect.x;
+		retMonitors[i].y -= totalRect.y;
+	}
+	return retMonitors;
+}
+
+
 ofVec2f ofxScreenSetup::getVirtualTopLeftMonitorCoord(){
 
 	ofAppBaseWindow * win = ofGetWindowPtr();

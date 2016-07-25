@@ -111,6 +111,11 @@ public:
 
 	ofEvent<ScreenSetupArg>	setupChanged;
 
+	//gets you all the monitor rects in window space, assuming one large windows that spans across
+	//all your monitors (using OF's multiScreenFullscreen)
+	static vector<ofRectangle> getAllMonitors();
+
+
 	ScreenMode currentMode;
 
 	static WindowEdgePaddingConfig windows7ClassicThemePad;
