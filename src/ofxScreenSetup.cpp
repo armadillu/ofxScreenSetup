@@ -301,6 +301,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	arg.newMode = m;
 	arg.oldHeight = ofGetHeight();
 	arg.oldWidth = ofGetWidth();
+	arg.who = this;
 
 	currentMode = m;
 

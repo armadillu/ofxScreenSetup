@@ -63,6 +63,7 @@ public:
 		int oldWidth;
 		ScreenMode newMode;
 		ScreenMode oldMode;
+		ofxScreenSetup * who;
 	};
 
 	//this only applies to windows, glwf doesnt quite get the window size right
