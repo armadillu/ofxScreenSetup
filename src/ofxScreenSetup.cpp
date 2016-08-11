@@ -529,5 +529,5 @@ void ofxScreenSetup::setFullscreenWindowStyle() {
 	SetWindowLong(hwnd, GWL_EXSTYLE, 0);
 	SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	SetWindowPos(hwnd, fullscreenDebugMode ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-	#endif;
+	#endif
 }
