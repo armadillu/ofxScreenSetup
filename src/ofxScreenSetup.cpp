@@ -393,6 +393,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 			ofSetFullscreen(false);
 			arg.newWidth = baseW ;
 			arg.newHeight = baseH;
+			ofSetWindowShape(baseW, baseH);
 			}break;
 
 		case MONITOR_2:
