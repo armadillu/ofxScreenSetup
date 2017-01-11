@@ -521,6 +521,11 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 	currentW = arg.newWidth;
 	currentH = arg.newHeight;
 	inited = true;
+
+	ofLogNotice("ofxScreenSetup") << "changed from " << arg.who->stringForMode(arg.oldMode)
+	<< " (" << arg.oldWidth << "x" << arg.oldHeight << ") to " << arg.who->stringForMode(arg.newMode)
+	<< " (" << arg.newWidth << "x" << arg.newHeight << ")";
+
 }
 
 
