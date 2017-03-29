@@ -9,6 +9,8 @@
 #ifndef __BaseApp__ofxScreenSetup__
 #define __BaseApp__ofxScreenSetup__
 
+#ifndef TARGET_OPENGLES
+
 #include "ofMain.h"
 
 #define AUTO_CASE_CREATE(a) case a: return #a
@@ -144,4 +146,5 @@ private:
 
 };
 
+#endif
 #endif /* defined(__BaseApp__ofxScreenSetup__) */

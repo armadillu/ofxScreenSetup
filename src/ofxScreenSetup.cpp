@@ -7,6 +7,9 @@
 //
 
 #include "ofxScreenSetup.h"
+
+#ifndef TARGET_OPENGLES
+
 #include "ofAppGLFWWindow.h"
 
 ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7ClassicThemePad = WindowEdgePaddingConfig(4, 23);
@@ -537,3 +540,5 @@ void ofxScreenSetup::setFullscreenWindowStyle() {
 	SetWindowPos(hwnd, fullscreenDebugMode ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 	#endif
 }
+
+#endif
