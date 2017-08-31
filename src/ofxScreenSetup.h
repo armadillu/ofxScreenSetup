@@ -104,8 +104,8 @@ public:
 
 	void setScreenMode(ScreenMode m);
 
-	vector<string> getModeNames();
-	string stringForMode(ScreenMode);
+	std::vector<std::string> getModeNames();
+	std::string stringForMode(ScreenMode);
 
 	void cycleToNextScreenMode();
 	void drawDebug(); //draws a clear pattern showing all the screen pixels
@@ -116,7 +116,7 @@ public:
 
 	//gets you all the monitor rects in window space, assuming one large windows that spans across
 	//all your monitors (using OF's multiScreenFullscreen)
-	static vector<ofRectangle> getAllMonitors();
+	static std::vector<ofRectangle> getAllMonitors();
 
 
 	ScreenMode currentMode;

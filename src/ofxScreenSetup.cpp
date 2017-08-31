@@ -28,8 +28,8 @@ void ofxScreenSetup::setup(float baseWidth, float baseHeight, ScreenMode mode, W
 	setScreenMode(mode);
 }
 
-vector<string> ofxScreenSetup::getModeNames(){
-	vector<string> screenModeNames;
+std::vector<std::string> ofxScreenSetup::getModeNames(){
+	std::vector<std::string> screenModeNames;
 	screenModeNames.push_back(stringForMode(FULL_ALL_MONITORS));
 	screenModeNames.push_back(stringForMode(FULL_ONE_MONITOR));
 	screenModeNames.push_back(stringForMode(BORDERLESS_ONE_MONITOR_W));
@@ -53,7 +53,7 @@ void ofxScreenSetup::cycleToNextScreenMode(){
 }
 
 
-string ofxScreenSetup::stringForMode(ScreenMode m){
+std::string ofxScreenSetup::stringForMode(ScreenMode m){
 
 	switch (m) {
 		AUTO_CASE_CREATE(FULL_ALL_MONITORS);
@@ -102,7 +102,7 @@ void ofxScreenSetup::drawDebug() {
 	ofDrawRectangle(0, ofGetHeight() - s, s, s);
 	ofDrawRectangle(ofGetWidth() - s, ofGetHeight() - s, s, s);
 	ofFill();
-	string msg = stringForMode(currentMode) + " : " + ofToString(currentW) + " x " + ofToString(currentH);
+	std::string msg = stringForMode(currentMode) + " : " + ofToString(currentW) + " x " + ofToString(currentH);
 	float scaleUp = 4;
 	int xoff = scaleUp * (msg.size() / 2 * 8); //centering it on screen
 	int yoff = 12 * 0.5;
