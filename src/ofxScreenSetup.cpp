@@ -10,6 +10,7 @@
 
 #ifndef TARGET_OPENGLES
 
+#include "GLFW/glfw3.h"
 #include "ofAppGLFWWindow.h"
 
 ofxScreenSetup::WindowEdgePaddingConfig ofxScreenSetup::windows7ClassicThemePad = WindowEdgePaddingConfig(4, 23);
