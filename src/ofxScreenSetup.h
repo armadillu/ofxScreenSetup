@@ -116,7 +116,7 @@ public:
 
 	//gets you all the monitor rects in window space, assuming one large windows that spans across
 	//all your monitors (using OF's multiScreenFullscreen)
-	static std::vector<ofRectangle> getAllMonitors();
+	static std::vector<ofRectangle> getAllMonitors(bool fixOrigin = true);
 
 
 	ScreenMode currentMode;

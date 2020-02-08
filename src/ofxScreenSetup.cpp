@@ -146,7 +146,7 @@ ofVec2f ofxScreenSetup::getMainScreenOrigin(){
 	return ofVec2f();
 }
 
-vector<ofRectangle> ofxScreenSetup::getAllMonitors(){
+vector<ofRectangle> ofxScreenSetup::getAllMonitors(bool fixOrigin){
 
 	vector<ofRectangle> retMonitors;
 	ofAppBaseWindow * win = ofGetWindowPtr();
@@ -165,9 +165,11 @@ vector<ofRectangle> ofxScreenSetup::getAllMonitors(){
 		}
 	}
 
-	for(int i = 0; i < retMonitors.size(); i++){
-		retMonitors[i].x -= totalRect.x;
-		retMonitors[i].y -= totalRect.y;
+	if(fixOrigin){
+		for(int i = 0; i < retMonitors.size(); i++){
+			retMonitors[i].x -= totalRect.x;
+			retMonitors[i].y -= totalRect.y;
+		}
 	}
 	return retMonitors;
 }
