@@ -9,11 +9,10 @@
 #ifndef __BaseApp__ofxScreenSetup__
 #define __BaseApp__ofxScreenSetup__
 
-#ifndef TARGET_OPENGLES
+#ifdef TARGET_GLFW_WINDOW
 
 #include "ofMain.h"
 
-#define AUTO_CASE_CREATE(a) case a: return #a
 
 /*
  
@@ -146,5 +145,7 @@ private:
 
 };
 
+#else
+	#error ofxScreenSetup only makes sense when using GLFW windows
 #endif
 #endif /* defined(__BaseApp__ofxScreenSetup__) */

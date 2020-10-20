@@ -8,7 +8,9 @@
 
 #include "ofxScreenSetup.h"
 
-#ifndef TARGET_OPENGLES
+#ifdef TARGET_GLFW_WINDOW
+
+#define AUTO_CASE_CREATE(a) case a: return #a
 
 #include "GLFW/glfw3.h"
 #include "ofAppGLFWWindow.h"
