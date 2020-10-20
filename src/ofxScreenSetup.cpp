@@ -8,7 +8,7 @@
 
 #include "ofxScreenSetup.h"
 
-#ifdef TARGET_GLFW_WINDOW
+#ifndef TARGET_OF_IOS
 
 #define AUTO_CASE_CREATE(a) case a: return #a
 

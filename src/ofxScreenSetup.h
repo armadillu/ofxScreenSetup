@@ -9,7 +9,7 @@
 #ifndef __BaseApp__ofxScreenSetup__
 #define __BaseApp__ofxScreenSetup__
 
-#ifdef TARGET_GLFW_WINDOW
+#ifndef TARGET_OF_IOS
 
 #include "ofMain.h"
 
