@@ -481,7 +481,7 @@ void ofxScreenSetup::setScreenMode(ScreenMode m){
 
 #endif // TARGET_WIN32
 
-#ifdef TARGET_OSX
+#ifdef defined TARGET_OSX || defined TARGET_LINUX
 
 	ofSetWindowShape(arg.newWidth, arg.newHeight);
 
